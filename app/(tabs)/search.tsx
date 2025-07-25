@@ -1,4 +1,3 @@
-import { useUser } from "@clerk/clerk-expo";
 import { Feather } from "@expo/vector-icons";
 import React, { useRef, useState } from "react";
 import {
@@ -11,6 +10,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
+import { useAuth } from "~/contexts/auth-context";
 import {
   quickSearchSuggestions,
   recentSearches,
@@ -30,7 +30,7 @@ import {
 } from "~/utils/search";
 
 const SearchScreen = () => {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<SearchFilter>("All");
 
@@ -64,7 +64,7 @@ const SearchScreen = () => {
             </View>
             <View className="w-12 h-12 bg-primary rounded-full items-center justify-center">
               <Text className="text-primary-foreground font-semibold text-lg">
-                {getAvatarInitial(user?.emailAddresses[0].emailAddress)}
+                {getAvatarInitial(user?.email)}
               </Text>
             </View>
           </View>

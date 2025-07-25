@@ -1,19 +1,19 @@
-import * as React from 'react';
-import { View } from 'react-native';
+import * as React from "react";
 import {
   Controller,
   type Control,
   type FieldPath,
   type FieldValues,
   type RegisterOptions,
-} from 'react-hook-form';
-import { cn } from '~/lib/utils';
-import { Text } from './text';
+} from "react-hook-form";
+import { View } from "react-native";
+import { cn } from "~/lib/utils";
+import { Text } from "./text";
 
 // Generic Form Control following React Hook Form documentation
 interface FormControlProps<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > {
   control: Control<TFieldValues>;
   name: TName;
@@ -40,15 +40,10 @@ interface FormControlProps<
 
 function FormControl<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({ control, name, rules, render }: FormControlProps<TFieldValues, TName>) {
   return (
-    <Controller
-      control={control}
-      name={name}
-      rules={rules}
-      render={render}
-    />
+    <Controller control={control} name={name} rules={rules} render={render} />
   );
 }
 
@@ -59,11 +54,7 @@ interface FormGroupProps {
 }
 
 function FormGroup({ children, className }: FormGroupProps) {
-  return (
-    <View className={cn('space-y-4', className)}>
-      {children}
-    </View>
-  );
+  return <View className={cn("space-y-4", className)}>{children}</View>;
 }
 
 // Form Field wrapper with label and error handling
@@ -85,17 +76,15 @@ function FormFieldWrapper({
   className,
 }: FormFieldWrapperProps) {
   return (
-    <View className={cn('space-y-2', className)}>
+    <View className={cn("space-y-2", className)}>
       {label && (
-        <Text className="text-sm font-medium">
+        <Text className="text-sm font-medium mb-1">
           {label}
           {required && <Text className="text-destructive ml-1">*</Text>}
         </Text>
       )}
       {children}
-      {error && (
-        <Text className="text-sm text-destructive">{error}</Text>
-      )}
+      {error && <Text className="text-sm text-destructive">{error}</Text>}
       {description && !error && (
         <Text className="text-sm text-muted-foreground">{description}</Text>
       )}
@@ -103,14 +92,6 @@ function FormFieldWrapper({
   );
 }
 
-export {
-  FormControl,
-  FormGroup,
-  FormFieldWrapper,
-};
+export { FormControl, FormFieldWrapper, FormGroup };
 
-export type {
-  FormControlProps,
-  FormGroupProps,
-  FormFieldWrapperProps,
-};
+export type { FormControlProps, FormFieldWrapperProps, FormGroupProps };

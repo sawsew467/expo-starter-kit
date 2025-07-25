@@ -1,14 +1,15 @@
-import { useAuth } from "@clerk/clerk-expo";
 import { Feather } from "@expo/vector-icons";
 import { Redirect, Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "~/contexts/auth-context";
 
 const TabsLayout = () => {
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
 
-  const { isSignedIn } = useAuth();
-
-  if (!isSignedIn) return <Redirect href="/(auth)/sign-in" />;
+  if (!user) {
+    return <Redirect href="/(auth)/sign-in" />;
+  }
 
   return (
     <Tabs

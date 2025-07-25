@@ -1,8 +1,8 @@
-import { useUser } from "@clerk/clerk-expo";
 import { Feather } from "@expo/vector-icons";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { Card, CardContent } from "~/components/ui/card";
 import { Text } from "~/components/ui/text";
+import { useAuth } from "~/contexts/auth-context";
 import { SignOutButton } from "~/components/shared/sign-out-button";
 import {
   profileStats,
@@ -12,7 +12,7 @@ import {
 import { getAvatarInitial } from "~/utils/search";
 
 const ProfileScreen = () => {
-  const { user } = useUser();
+  const { user } = useAuth();
 
   return (
     <ScrollView className="flex-1 ">
@@ -21,14 +21,14 @@ const ProfileScreen = () => {
         <View className="items-center">
           <View className="w-20 h-20 bg-primary rounded-full items-center justify-center mb-4">
             <Text className="text-primary-foreground font-bold text-2xl">
-              {getAvatarInitial(user?.emailAddresses[0].emailAddress)}
+              {getAvatarInitial(user?.email)}
             </Text>
           </View>
           <Text className="text-2xl font-bold mb-1">
-            {user?.firstName || "User"} {user?.lastName || ""}
+            {user?.user_metadata?.full_name || user?.user_metadata?.firstName || "User"}
           </Text>
           <Text className="text-base text-muted-foreground mb-2">
-            {user?.emailAddresses[0].emailAddress}
+            {user?.email}
           </Text>
           <View className="flex-row items-center">
             <View className="w-2 h-2 bg-green-500 rounded-full mr-2" />

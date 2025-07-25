@@ -54,7 +54,7 @@ export const recentActivities: Activity[] = [
     title: "Updated project documentation",
     description: "Modified README and API docs",
     icon: "edit",
-    iconColor: "bg-blue-500",
+    iconColor: "bg-orange-500",
     date: "2 hours ago",
   },
   {

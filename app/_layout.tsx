@@ -1,5 +1,3 @@
-import { ClerkProvider } from "@clerk/clerk-expo";
-import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { DarkTheme, DefaultTheme, Theme } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
@@ -7,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AuthProvider } from "~/contexts/auth-context";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/useColorScheme";
 import "../global.css";
@@ -49,7 +48,7 @@ export default function RootLayout() {
     return null;
   }
   return (
-    <ClerkProvider tokenCache={tokenCache}>
+    <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <SafeAreaProvider>
           <Stack screenOptions={{ headerShown: false }}>
@@ -59,7 +58,7 @@ export default function RootLayout() {
         </SafeAreaProvider>
         <StatusBar style="dark" />
       </QueryClientProvider>
-    </ClerkProvider>
+    </AuthProvider>
   );
 }
 

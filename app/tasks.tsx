@@ -1,10 +1,10 @@
-import { useUser } from "@clerk/clerk-expo";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Text } from "~/components/ui/text";
+import { useAuth } from "~/contexts/auth-context";
 import { mockTasks } from "~/data/tasks";
 import { getAvatarInitial } from "~/utils/search";
 import {
@@ -15,7 +15,7 @@ import {
 } from "~/utils/tasks";
 
 const TasksScreen = () => {
-  const { user } = useUser();
+  const { user } = useAuth();
   const router = useRouter();
 
   const completedTasks = getCompletedTasks(mockTasks);
@@ -43,7 +43,7 @@ const TasksScreen = () => {
           </View>
           <View className="w-12 h-12 bg-primary rounded-full items-center justify-center">
             <Text className="text-primary-foreground font-semibold text-lg">
-              {getAvatarInitial(user?.emailAddresses[0].emailAddress)}
+              {getAvatarInitial(user?.email)}
             </Text>
           </View>
         </View>

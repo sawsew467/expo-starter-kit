@@ -1,10 +1,10 @@
-import { useUser } from "@clerk/clerk-expo";
 import { ScrollView, View } from "react-native";
 import { Text } from "~/components/ui/text";
+import { useAuth } from "~/contexts/auth-context";
 import RecentActivity from "~/components/shared/recent-activity";
 
 const HomeScreen = () => {
-  const { user } = useUser();
+  const { user } = useAuth();
 
   return (
     <View className="flex-1">
@@ -16,12 +16,12 @@ const HomeScreen = () => {
               Welcome back!
             </Text>
             <Text className="text-base text-muted-foreground">
-              {user?.emailAddresses[0].emailAddress}
+              {user?.email}
             </Text>
           </View>
           <View className="w-12 h-12 bg-primary rounded-full items-center justify-center">
             <Text className="text-primary-foreground font-semibold text-lg">
-              {user?.emailAddresses[0].emailAddress?.charAt(0).toUpperCase()}
+              {user?.email?.charAt(0).toUpperCase()}
             </Text>
           </View>
         </View>

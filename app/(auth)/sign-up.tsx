@@ -1,6 +1,5 @@
-import { useSignUp } from "@clerk/clerk-expo";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -10,26 +9,34 @@ import {
   View,
 } from "react-native";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { FormFieldWrapper, FormGroup } from "~/components/ui/form-control";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
-import {
-  emailVerificationSchema,
-  signUpSchema,
-  type EmailVerificationFormData,
-  type SignUpFormData,
-} from "~/lib/validations";
+import { useAuth } from "~/contexts/auth-context";
+import { signUpSchema, type SignUpFormData } from "~/lib/validations";
+import { mapAuthError } from "~/utils/auth-errors";
 
 export default function SignUpScreen() {
-  const { isLoaded, signUp, setActive } = useSignUp();
+  const { signUp, loading } = useAuth();
   const router = useRouter();
   const [pendingVerification, setPendingVerification] = React.useState(false);
-  const [signUpError, setSignUpError] = React.useState<string>("");
-  const [verifyError, setVerifyError] = React.useState<string>("");
+  const [userEmail, setUserEmail] = React.useState<string>("");
+  const [isNavigating, setIsNavigating] = React.useState(false);
 
   // Sign-up form
-  const signUpForm = useForm<SignUpFormData>({
+  const {
+    control: signUpControl,
+    handleSubmit: handleSignUpSubmit,
+    formState: { isSubmitting: isSignUpSubmitting, errors: signUpErrors },
+    setError: setSignUpError,
+  } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       emailAddress: "",
@@ -37,74 +44,34 @@ export default function SignUpScreen() {
     },
   });
 
-  // Verification form
-  const verifyForm = useForm<EmailVerificationFormData>({
-    resolver: zodResolver(emailVerificationSchema),
-    defaultValues: {
-      code: "",
-    },
-  });
-
   // Handle submission of sign-up form
   const onSignUpPress = async (data: SignUpFormData) => {
-    if (!isLoaded) return;
+    const { error } = await signUp(data.emailAddress, data.password);
 
-    setSignUpError("");
-
-    // Start sign-up process using email and password provided
-    try {
-      await signUp.create({
-        emailAddress: data.emailAddress,
-        password: data.password,
+    if (error) {
+      const errorInfo = mapAuthError(error);
+      setSignUpError("root", {
+        message: errorInfo.message,
       });
-
-      // Send user an email with verification code
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-
-      // Set 'pendingVerification' to true to display second form
-      // and capture OTP code
+    } else {
+      // Store email and show success message
+      setUserEmail(data.emailAddress);
       setPendingVerification(true);
-    } catch (err: any) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
-      console.error(JSON.stringify(err, null, 2));
-      setSignUpError(
-        err?.errors?.[0]?.message || "An error occurred during sign up. Please try again."
-      );
     }
   };
 
-  // Handle submission of verification form
-  const onVerifyPress = async (data: EmailVerificationFormData) => {
-    if (!isLoaded) return;
+  // Handle back to signup form
+  const onBackToSignUp = () => {
+    setPendingVerification(false);
+    setUserEmail("");
+  };
 
-    setVerifyError("");
-
-    try {
-      // Use the code the user provided to attempt verification
-      const signUpAttempt = await signUp.attemptEmailAddressVerification({
-        code: data.code,
-      });
-
-      // If verification was completed, set the session to active
-      // and redirect the user
-      if (signUpAttempt.status === "complete") {
-        await setActive({ session: signUpAttempt.createdSessionId });
-        router.replace("/");
-      } else {
-        // If the status is not complete, check why. User may need to
-        // complete further steps.
-        console.error(JSON.stringify(signUpAttempt, null, 2));
-        setVerifyError("Verification failed. Please try again.");
-      }
-    } catch (err: any) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
-      console.error(JSON.stringify(err, null, 2));
-      setVerifyError(
-        err?.errors?.[0]?.message || "Invalid verification code. Please try again."
-      );
-    }
+  const handleSignInNavigation = () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    router.replace("/sign-in");
+    // Reset after navigation
+    setTimeout(() => setIsNavigating(false), 1000);
   };
 
   if (pendingVerification) {
@@ -117,52 +84,42 @@ export default function SignUpScreen() {
           <View className="flex-1 px-4 pt-16 pb-6 justify-center">
             <Card className="mx-4">
               <CardHeader className="text-center">
-                <CardTitle>Verify Your Email</CardTitle>
-                <CardDescription>Enter the verification code sent to your email</CardDescription>
+                <CardTitle>Check Your Email</CardTitle>
+                <CardDescription>
+                  We&apos;ve sent a confirmation link to {userEmail}. Please
+                  check your email and click the link to verify your account.
+                </CardDescription>
               </CardHeader>
-              
-              <CardContent>
-                <FormGroup>
-                  <Controller
-                    control={verifyForm.control}
-                    name="code"
-                    render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-                      <FormFieldWrapper
-                        label="Verification Code"
-                        error={error?.message}
-                        description="Enter the 6-digit code sent to your email"
-                        required
-                      >
-                        <Input
-                          value={value}
-                          onChangeText={onChange}
-                          onBlur={onBlur}
-                          placeholder="Enter 6-digit code"
-                          keyboardType="number-pad"
-                          maxLength={6}
-                          className={error && 'border-destructive'}
-                        />
-                      </FormFieldWrapper>
-                    )}
-                  />
 
-                  {verifyError && (
-                    <Text className="text-sm text-destructive font-medium">
-                      {verifyError}
+              <CardContent>
+                <View className="space-y-4">
+                  <View className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <Text className="text-green-800 text-center font-medium mb-2">
+                      Account Created Successfully! ✅
                     </Text>
-                  )}
+                    <Text className="text-green-700 text-center text-sm">
+                      • Check your email inbox for the confirmation link{"\n"}•
+                      Don&apos;t forget to check your spam folder{"\n"}• Click
+                      the link to activate your account
+                    </Text>
+                  </View>
+
+                  <Button
+                    variant="outline"
+                    onPress={onBackToSignUp}
+                    className="mt-6"
+                  >
+                    <Text>Back to Sign Up</Text>
+                  </Button>
 
                   <Button
                     variant="secondary"
-                    onPress={verifyForm.handleSubmit(onVerifyPress)}
-                    disabled={!isLoaded || verifyForm.formState.isSubmitting}
-                    className="mt-6"
+                    onPress={() => router.replace("/sign-in")}
+                    className="mt-2"
                   >
-                    <Text>
-                      {verifyForm.formState.isSubmitting ? "Verifying..." : "Verify Email"}
-                    </Text>
+                    <Text>Go to Sign In</Text>
                   </Button>
-                </FormGroup>
+                </View>
               </CardContent>
             </Card>
           </View>
@@ -183,17 +140,21 @@ export default function SignUpScreen() {
               <CardTitle>Create Account</CardTitle>
               <CardDescription>Sign up to get started</CardDescription>
             </CardHeader>
-            
+
             <CardContent>
               <FormGroup>
                 <Controller
-                  control={signUpForm.control}
+                  control={signUpControl}
                   name="emailAddress"
-                  render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                  render={({
+                    field: { onChange, onBlur, value },
+                    fieldState: { error },
+                  }) => (
                     <FormFieldWrapper
                       label="Email"
                       error={error?.message}
                       required
+                      className="mb-4"
                     >
                       <Input
                         value={value}
@@ -202,21 +163,25 @@ export default function SignUpScreen() {
                         placeholder="Enter your email"
                         keyboardType="email-address"
                         autoCapitalize="none"
-                        className={error && 'border-destructive'}
+                        className={error && "border-destructive"}
                       />
                     </FormFieldWrapper>
                   )}
                 />
 
                 <Controller
-                  control={signUpForm.control}
+                  control={signUpControl}
                   name="password"
-                  render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+                  render={({
+                    field: { onChange, onBlur, value },
+                    fieldState: { error },
+                  }) => (
                     <FormFieldWrapper
                       label="Password"
                       error={error?.message}
                       description="Must be at least 8 characters with uppercase, lowercase, and number"
                       required
+                      className="mb-4"
                     >
                       <Input
                         value={value}
@@ -224,25 +189,26 @@ export default function SignUpScreen() {
                         onBlur={onBlur}
                         placeholder="Enter your password"
                         secureTextEntry={true}
-                        className={error && 'border-destructive'}
+                        className={error && "border-destructive"}
                       />
                     </FormFieldWrapper>
                   )}
                 />
 
-                {signUpError && (
-                  <Text className="text-sm text-destructive font-medium">
-                    {signUpError}
+                {signUpErrors?.root && (
+                  <Text className="text-destructive mb-4 text-center">
+                    {signUpErrors.root.message}
                   </Text>
                 )}
 
                 <Button
-                  onPress={signUpForm.handleSubmit(onSignUpPress)}
-                  disabled={!isLoaded || signUpForm.formState.isSubmitting}
-                  className="mt-6"
+                  onPress={handleSignUpSubmit(onSignUpPress)}
+                  disabled={loading || isSignUpSubmitting}
                 >
                   <Text>
-                    {signUpForm.formState.isSubmitting ? "Creating Account..." : "Create Account"}
+                    {isSignUpSubmitting || loading
+                      ? "Creating Account..."
+                      : "Create Account"}
                   </Text>
                 </Button>
               </FormGroup>
@@ -250,12 +216,16 @@ export default function SignUpScreen() {
           </Card>
 
           <View className="flex-row justify-center items-center mt-6">
-            <Text className="text-muted-foreground">Already have an account? </Text>
-            <Link href="/sign-in" className="ml-1">
-              <Text className="text-primary font-medium">
-                Sign in
-              </Text>
-            </Link>
+            <Text className="text-muted-foreground">
+              Already have an account?{" "}
+            </Text>
+            <Text
+              className="text-primary font-medium ml-1"
+              onPress={handleSignInNavigation}
+              suppressHighlighting={true}
+            >
+              Sign in
+            </Text>
           </View>
         </View>
       </KeyboardAvoidingView>
