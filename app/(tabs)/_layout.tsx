@@ -36,10 +36,18 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
+        name="notes"
+        options={{
+          title: "",
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="file-text" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="search"
         options={{
           title: "",
-
           tabBarIcon: ({ color, size }) => (
             <Feather name="search" size={size} color={color} />
           ),

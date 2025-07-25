@@ -93,9 +93,7 @@ const TasksScreen = () => {
 
         {/* Pending Tasks */}
         <View className="px-4 pb-6">
-          <Text className="text-xl font-semibold mb-4">
-            Pending Tasks
-          </Text>
+          <Text className="text-xl font-semibold mb-4">Pending Tasks</Text>
           {pendingTasks.map((task) => (
             <Card key={task.id} className="mb-3">
               <CardContent className="p-4">
@@ -113,7 +111,9 @@ const TasksScreen = () => {
                         <Text className="text-sm text-muted-foreground mr-3">
                           {task.priority} priority
                         </Text>
-                        <Text className="text-sm text-muted-foreground">{task.date}</Text>
+                        <Text className="text-sm text-muted-foreground">
+                          {task.date}
+                        </Text>
                       </View>
                     </View>
                     <Feather name="chevron-right" size={16} color="#9CA3AF" />
@@ -126,9 +126,7 @@ const TasksScreen = () => {
 
         {/* Completed Tasks */}
         <View className="px-4 pb-8">
-          <Text className="text-xl font-semibold mb-4">
-            Completed Tasks
-          </Text>
+          <Text className="text-xl font-semibold mb-4">Completed Tasks</Text>
           {completedTasks.map((task) => (
             <Card key={task.id} className="mb-3">
               <CardContent className="p-4">
@@ -148,7 +146,9 @@ const TasksScreen = () => {
                         <Text className="text-sm text-muted-foreground mr-3">
                           {task.priority} priority
                         </Text>
-                        <Text className="text-sm text-muted-foreground">{task.date}</Text>
+                        <Text className="text-sm text-muted-foreground">
+                          {task.date}
+                        </Text>
                       </View>
                     </View>
                   </View>
