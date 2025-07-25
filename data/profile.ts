@@ -1,4 +1,4 @@
-import { ProfileStat, SettingsOption, Activity } from '@/types';
+import { Activity, ProfileStat, SettingsOption } from "~/types";
 
 export const profileStats: ProfileStat[] = [
   {
@@ -8,16 +8,16 @@ export const profileStats: ProfileStat[] = [
     color: "bg-blue-500",
   },
   {
-    label: "Projects", 
+    label: "Projects",
     value: "8",
     icon: "folder",
-    color: "bg-green-500"
+    color: "bg-green-500",
   },
   {
     label: "Shared",
-    value: "12", 
+    value: "12",
     icon: "share",
-    color: "bg-purple-500"
+    color: "bg-purple-500",
   },
 ];
 
@@ -42,21 +42,9 @@ export const settingsOptions: SettingsOption[] = [
   },
   {
     title: "Storage & Sync",
-    subtitle: "Cloud storage, offline access", 
+    subtitle: "Cloud storage, offline access",
     icon: "cloud",
     color: "bg-orange-500",
-  },
-  {
-    title: "Help & Support",
-    subtitle: "FAQ, contact support",
-    icon: "help-circle",
-    color: "bg-gray-500",
-  },
-  {
-    title: "About",
-    subtitle: "App version, terms of service",
-    icon: "info", 
-    color: "bg-indigo-500",
   },
 ];
 
@@ -70,16 +58,16 @@ export const recentActivities: Activity[] = [
     date: "2 hours ago",
   },
   {
-    id: 2, 
+    id: 2,
     title: "Uploaded 5 new files",
     description: "Added design assets to project",
     icon: "upload",
-    iconColor: "bg-green-500", 
+    iconColor: "bg-green-500",
     date: "1 day ago",
   },
   {
     id: 3,
-    title: "Document Created", 
+    title: "Document Created",
     description: "New project proposal document",
     icon: "file-text",
     iconColor: "bg-blue-500",
@@ -89,7 +77,7 @@ export const recentActivities: Activity[] = [
     id: 4,
     title: "Task Completed",
     description: "Finished code review task",
-    icon: "check-circle", 
+    icon: "check-circle",
     iconColor: "bg-green-500",
     date: "5 hours ago",
   },

@@ -1,7 +1,8 @@
 import { useClerk } from "@clerk/clerk-expo";
-import * as Linking from "expo-linking";
-import { Text, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import * as Linking from "expo-linking";
+import { Button } from "~/components/ui/button";
+import { Text } from "~/components/ui/text";
 
 export const SignOutButton = () => {
   // Use `useClerk()` to access the `signOut()` function
@@ -18,14 +19,13 @@ export const SignOutButton = () => {
     }
   };
   return (
-    <TouchableOpacity 
+    <Button
+      variant="destructive"
       onPress={handleSignOut}
-      className="w-full h-12 bg-red-500 rounded-lg justify-center items-center flex-row"
+      className="w-full flex-row"
     >
       <Feather name="log-out" size={18} color="white" />
-      <Text className="text-white text-base font-semibold ml-2">
-        Sign Out
-      </Text>
-    </TouchableOpacity>
+      <Text className="ml-2">Sign Out</Text>
+    </Button>
   );
 };

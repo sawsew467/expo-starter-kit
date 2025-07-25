@@ -1,11 +1,11 @@
-import { SearchResult, SearchFilter } from '@/types';
+import { SearchFilter, SearchResult } from "~/types";
 
 export const searchFilters: SearchFilter[] = [
-  'All', 
-  'Documents', 
-  'Images', 
-  'People', 
-  'Projects'
+  "All",
+  "Documents",
+  "Images",
+  "People",
+  "Projects",
 ];
 
 export const searchResults: SearchResult[] = [
@@ -19,7 +19,7 @@ export const searchResults: SearchResult[] = [
   {
     id: 2,
     title: "Team Meeting Notes",
-    type: "Document", 
+    type: "Document",
     date: "1 week ago",
     icon: "file-text",
   },
@@ -27,7 +27,7 @@ export const searchResults: SearchResult[] = [
     id: 3,
     title: "Design Assets",
     type: "Image",
-    date: "3 days ago", 
+    date: "3 days ago",
     icon: "image",
   },
   {
@@ -39,7 +39,7 @@ export const searchResults: SearchResult[] = [
   },
   {
     id: 5,
-    title: "Mobile App Project", 
+    title: "Mobile App Project",
     type: "Project",
     date: "5 days ago",
     icon: "folder",
@@ -48,14 +48,14 @@ export const searchResults: SearchResult[] = [
 
 export const quickSearchSuggestions: string[] = [
   "Recent documents",
-  "My projects", 
+  "My projects",
   "Team files",
   "Shared items",
 ];
 
 export const recentSearches: string[] = [
   "project alpha",
-  "team meeting", 
+  "team meeting",
   "design files",
   "project beta",
   "project gamma",
