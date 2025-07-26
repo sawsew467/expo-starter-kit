@@ -77,8 +77,8 @@ This approach makes the codebase easier to navigate and maintain as it grows. It
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/expo-base.git
-    cd expo-base
+    git clone https://github.com/sawsew467/expo-starter-kit
+    cd expo-starter-kit
     ```
 
 2.  **Install dependencies:**
