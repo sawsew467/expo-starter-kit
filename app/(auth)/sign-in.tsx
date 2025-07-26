@@ -19,12 +19,13 @@ import {
 import { FormFieldWrapper, FormGroup } from "~/components/ui/form-control";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
-import { useAuth } from "~/contexts/auth-context";
+import { useAuthLoading, useSignIn } from "~/features/auth/stores/auth.store";
+import { mapAuthError } from "~/features/auth/utils/auth-errors";
 import { signInSchema, type SignInFormData } from "~/lib/validations";
-import { mapAuthError } from "~/utils/auth-errors";
 
 export default function SignInScreen() {
-  const { signIn, loading } = useAuth();
+  const signIn = useSignIn();
+  const loading = useAuthLoading();
   const router = useRouter();
   const [isNavigating, setIsNavigating] = React.useState(false);
 

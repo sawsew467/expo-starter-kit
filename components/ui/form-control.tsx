@@ -5,6 +5,9 @@ import {
   type FieldPath,
   type FieldValues,
   type RegisterOptions,
+  type ControllerRenderProps,
+  type ControllerFieldState,
+  type UseFormStateReturn,
 } from "react-hook-form";
 import { View } from "react-native";
 import { cn } from "~/lib/utils";
@@ -18,23 +21,14 @@ interface FormControlProps<
   control: Control<TFieldValues>;
   name: TName;
   rules?: RegisterOptions<TFieldValues, TName>;
-  render: (props: {
-    field: {
-      onChange: (...event: any[]) => void;
-      onBlur: () => void;
-      value: any;
-      name: TName;
-      ref: React.RefObject<any>;
-    };
-    fieldState: {
-      invalid: boolean;
-      isTouched: boolean;
-      isDirty: boolean;
-      error?: {
-        type: string;
-        message?: string;
-      };
-    };
+  render: ({
+    field,
+    fieldState,
+    formState,
+  }: {
+    field: ControllerRenderProps<TFieldValues, TName>;
+    fieldState: ControllerFieldState;
+    formState: UseFormStateReturn<TFieldValues>;
   }) => React.ReactElement;
 }
 

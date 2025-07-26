@@ -19,12 +19,13 @@ import {
 import { FormFieldWrapper, FormGroup } from "~/components/ui/form-control";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
-import { useAuth } from "~/contexts/auth-context";
+import { useSignUp, useAuthLoading } from "~/features/auth/stores/auth.store";
+import { mapAuthError } from "~/features/auth/utils/auth-errors";
 import { signUpSchema, type SignUpFormData } from "~/lib/validations";
-import { mapAuthError } from "~/utils/auth-errors";
 
 export default function SignUpScreen() {
-  const { signUp, loading } = useAuth();
+  const signUp = useSignUp();
+  const loading = useAuthLoading();
   const router = useRouter();
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [userEmail, setUserEmail] = React.useState<string>("");

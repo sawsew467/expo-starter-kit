@@ -1,7 +1,6 @@
-import { Feather } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Alert,
@@ -9,7 +8,6 @@ import {
   Platform,
   SafeAreaView,
   ScrollView,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { z } from "zod";
@@ -18,7 +16,8 @@ import { FormFieldWrapper, FormGroup } from "~/components/ui/form-control";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Text } from "~/components/ui/text";
-import { useCreateNoteMutation } from "~/hooks";
+import { useCreateNoteMutation } from "~/features/notes/hooks/useNotesMutation";
+import { CategorySelector } from "~/features/notes/components/CategorySelector";
 
 const createNoteSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title too long"),
@@ -29,6 +28,7 @@ type CreateNoteFormData = z.infer<typeof createNoteSchema>;
 
 export default function CreateNoteScreen() {
   const router = useRouter();
+  const [selectedCategory, setSelectedCategory] = useState('general');
 
   const {
     control,
@@ -46,7 +46,11 @@ export default function CreateNoteScreen() {
   const createNoteMutation = useCreateNoteMutation();
 
   const onSubmit = async (data: CreateNoteFormData) => {
-    createNoteMutation.mutate(data, {
+    createNoteMutation.mutate({
+      title: data.title,
+      content: data.content,
+      category: selectedCategory
+    }, {
       onSuccess: (result) => {
         if (result.error) {
           setError("root", { message: result.error });
@@ -77,13 +81,15 @@ export default function CreateNoteScreen() {
                 Add a new note to your collection
               </Text>
             </View>
-            <Button
-              variant="outline"
-              onPress={() => router.back()}
-              size="sm"
-            >
-              <Text>Cancel</Text>
-            </Button>
+            <View className="flex flex-row">
+              <Button
+                variant="outline"
+                onPress={() => router.back()}
+                size="sm"
+              >
+                <Text>Cancel</Text>
+              </Button>
+            </View>
           </View>
 
           {/* Form */}
@@ -135,6 +141,12 @@ export default function CreateNoteScreen() {
                   />
                 </FormFieldWrapper>
               )}
+            />
+
+            <CategorySelector
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              className="mb-4"
             />
 
             {errors?.root && (

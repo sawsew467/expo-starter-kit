@@ -5,7 +5,8 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { AuthProvider } from "~/contexts/auth-context";
+// Import auth store to trigger initialization
+import "~/features/auth/stores/auth.store";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/useColorScheme";
 import "../global.css";
@@ -48,17 +49,15 @@ export default function RootLayout() {
     return null;
   }
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClient}>
-        <SafeAreaProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(tabs)" />
-          </Stack>
-        </SafeAreaProvider>
-        <StatusBar style="dark" />
-      </QueryClientProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </SafeAreaProvider>
+      <StatusBar style="dark" />
+    </QueryClientProvider>
   );
 }
 

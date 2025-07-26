@@ -22,4 +22,8 @@ function Input({
   );
 }
 
-export { Input };
+type InputProps = TextInputProps & {
+  ref?: React.RefObject<TextInput>;
+};
+
+export { Input, type InputProps };

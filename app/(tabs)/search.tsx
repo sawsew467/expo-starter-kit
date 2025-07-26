@@ -1,208 +1,159 @@
 import { Feather } from "@expo/vector-icons";
-import React, { useRef, useState } from "react";
+import { format } from "date-fns";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-  Animated,
-  ScrollView,
+  ActivityIndicator,
+  FlatList,
   TouchableOpacity,
   View,
 } from "react-native";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
-import { useAuth } from "~/contexts/auth-context";
-import {
-  quickSearchSuggestions,
-  recentSearches,
-  searchFilters,
-  searchResults,
-} from "~/data/search";
-import { SearchFilter } from "~/types";
-import {
-  createScrollHandler,
-  createScrollHeight,
-  createScrollOpacity,
-} from "~/utils/animations";
-import {
-  clearSearchQuery,
-  filterSearchResults,
-  getAvatarInitial,
-} from "~/utils/search";
+import { useUser } from "~/features/auth/stores/auth.store";
+import { NoteCard } from "~/features/notes/components/NoteCard";
+import { useNotesQuery } from "~/features/notes/hooks/useNotesQuery";
+import type { Note } from "~/features/notes/types";
+import { getCategoryColor, getCategoryLabel } from "~/utils/categories";
 
 const SearchScreen = () => {
-  const { user } = useAuth();
+  const user = useUser();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<SearchFilter>("All");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-  // Animation values
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const headerOpacity = createScrollOpacity(scrollY);
-  const headerTitleHeight = createScrollHeight(scrollY);
+  // Search filters for notes
+  const searchFilters = searchQuery.trim() ? { search: searchQuery } : {};
+  const categoryFilters =
+    selectedCategory !== "all" ? { category: selectedCategory } : {};
 
-  // Filter search results based on active filter
-  const filteredResults = filterSearchResults(searchResults, activeFilter);
+  const { data: notes = [], isLoading } = useNotesQuery({
+    ...searchFilters,
+    ...categoryFilters,
+    limit: 50,
+  });
+
+  // Get unique categories from notes
+  const { data: allNotes = [] } = useNotesQuery({ limit: 1000 });
+  const categories = ["all", ...new Set(allNotes.map((note) => note.category))];
+
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+  };
+
+  const handleCategoryFilter = (category: string) => {
+    setSelectedCategory(category);
+  };
+
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), "MMM d, yyyy");
+  };
+
+  const renderNoteItem = ({ item }: { item: Note }) => <NoteCard note={item} />;
 
   return (
     <View className="flex-1">
-      {/* Header Section */}
-      <View className="bg-white px-4 pt-safe shadow-sm z-10">
-        <Animated.View
-          style={{
-            height: headerTitleHeight,
-            opacity: headerOpacity,
-            overflow: "hidden",
-          }}
-        >
-          <View className="flex-row items-center justify-between mb-4">
-            <View className="flex-1">
-              <Text className="text-2xl font-bold mb-1">
-                Search
-              </Text>
-              <Text className="text-base text-muted-foreground">
-                Find what you are looking for
-              </Text>
-            </View>
-            <View className="w-12 h-12 bg-primary rounded-full items-center justify-center">
-              <Text className="text-primary-foreground font-semibold text-lg">
-                {getAvatarInitial(user?.email)}
-              </Text>
-            </View>
+      {/* Header */}
+      <View className="bg-background px-4 pt-safe pb-4 shadow-sm">
+        <View className="flex-row justify-between items-center mb-4">
+          <View>
+            <Text className="text-2xl font-bold">Search Notes</Text>
+            <Text className="text-muted-foreground mt-1">
+              Find your notes quickly
+            </Text>
           </View>
-        </Animated.View>
+          <Button
+            onPress={() => router.push("/notes/create")}
+            size="sm"
+            className="px-4 flex flex-row items-center"
+          >
+            <Feather name="plus" size={16} color="white" />
+            <Text className="ml-2 text-white">New</Text>
+          </Button>
+        </View>
 
-        {/* Search Bar */}
-        <View className="flex-row items-center mb-4">
-          <View className="flex-1 relative">
-            <Feather 
-              name="search" 
-              size={20} 
-              color="#6B7280" 
-              style={{ position: 'absolute', left: 12, top: 12, zIndex: 1 }}
-            />
-            <Input
-              className="pl-10"
-              placeholder="Search documents, people, projects..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
+        {/* Search Input */}
+        <View className="relative mb-4">
+          <Input
+            placeholder="Search by title, content, or tags..."
+            value={searchQuery}
+            onChangeText={handleSearch}
+            className="pr-10"
+          />
+          <View className="absolute right-3 top-3">
+            <Feather name="search" size={20} color="#6b7280" />
           </View>
-          {searchQuery.length > 0 && (
-            <TouchableOpacity 
-              onPress={() => clearSearchQuery(setSearchQuery)}
-              className="ml-2 p-2"
-            >
-              <Feather name="x" size={20} color="#6B7280" />
-            </TouchableOpacity>
-          )}
+        </View>
+
+        {/* Filters */}
+        <View className="flex-row items-center justify-between">
+          {/* Categories */}
+          <View className="flex-1">
+            <Text className="text-sm font-medium mb-2">Category</Text>
+            <View className="flex-row flex-wrap">
+              {categories.slice(0, 6).map((category) => {
+                const isActive = selectedCategory === category;
+                const categoryColor =
+                  category === "all" ? "#3b82f6" : getCategoryColor(category);
+
+                return (
+                  <TouchableOpacity
+                    key={category}
+                    onPress={() => handleCategoryFilter(category)}
+                    style={{
+                      backgroundColor: isActive ? categoryColor : "#f3f4f6",
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: 16,
+                      marginRight: 8,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: isActive ? "white" : "#374151",
+                        fontSize: 12,
+                        fontWeight: isActive ? "600" : "400",
+                      }}
+                    >
+                      {category === "all" ? "All" : getCategoryLabel(category)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
         </View>
       </View>
 
-      <Animated.ScrollView
-        className="flex-1"
-        onScroll={createScrollHandler(scrollY)}
-        scrollEventThrottle={16}
-      >
-        {/* Filter Section */}
-        <View className="px-4 py-4">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {searchFilters.map((filter) => (
-              <Button
-                key={filter}
-                variant={activeFilter === filter ? "default" : "outline"}
-                size="sm"
-                onPress={() => setActiveFilter(filter)}
-                className="mr-3 rounded-full"
-              >
-                <Text>{filter}</Text>
-              </Button>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Quick Search Suggestions */}
-        {searchQuery.length === 0 && (
-          <View className="px-4 pb-6">
-            <Text className="text-lg font-semibold mb-4">
-              Quick Search
-            </Text>
-            <View className="flex-row flex-wrap">
-              {quickSearchSuggestions.map((suggestion) => (
-                <Button
-                  key={suggestion}
-                  variant="outline"
-                  size="sm"
-                  className="mr-2 mb-2"
-                >
-                  <Text>{suggestion}</Text>
-                </Button>
-              ))}
-            </View>
+      {/* Results */}
+      <View className="flex-1 px-4">
+        {isLoading ? (
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#6b7280" />
+            <Text className="text-muted-foreground mt-4">Searching...</Text>
           </View>
+        ) : (
+          <FlatList
+            data={notes}
+            renderItem={renderNoteItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{ paddingTop: 16, paddingBottom: 20 }}
+            ListEmptyComponent={
+              <View className="flex-1 justify-center items-center py-12">
+                <Feather name="search" size={48} color="#d1d5db" />
+                <Text className="text-muted-foreground text-center mt-4">
+                  {searchQuery || selectedCategory !== "all"
+                    ? "No notes found matching your search"
+                    : "Start typing to search your notes"}
+                </Text>
+              </View>
+            }
+            showsVerticalScrollIndicator={false}
+          />
         )}
-
-        {/* Search Results */}
-        {searchQuery.length > 0 && (
-          <View className="px-4 pb-6">
-            <Text className="text-lg font-semibold mb-4">
-              Results ({filteredResults.length})
-            </Text>
-            {filteredResults.map((result) => (
-              <Card key={result.id} className="mb-3">
-                <CardContent className="p-4">
-                  <TouchableOpacity>
-                    <View className="flex-row items-center">
-                      <View className="w-10 h-10 bg-primary/10 rounded-full items-center justify-center mr-3">
-                        <Feather
-                          name={result.icon as any}
-                          size={16}
-                          color="#3B82F6"
-                        />
-                      </View>
-                      <View className="flex-1">
-                        <Text className="text-base font-medium mb-1">
-                          {result.title}
-                        </Text>
-                        <View className="flex-row items-center">
-                          <Text className="text-sm text-muted-foreground mr-2">
-                            {result.type}
-                          </Text>
-                          <Text className="text-sm text-muted-foreground">
-                            • {result.date}
-                          </Text>
-                        </View>
-                      </View>
-                      <Feather name="chevron-right" size={16} color="#9CA3AF" />
-                    </View>
-                  </TouchableOpacity>
-                </CardContent>
-              </Card>
-            ))}
-          </View>
-        )}
-
-        {/* Recent Searches */}
-        {searchQuery.length === 0 && (
-          <View className="px-4 pb-6">
-            <Text className="text-lg font-semibold mb-4">
-              Recent Searches
-            </Text>
-            {recentSearches.map((search, index) => (
-              <TouchableOpacity
-                key={index}
-                className="flex-row items-center py-3"
-              >
-                <View className="w-8 h-8 bg-muted rounded-full items-center justify-center mr-3">
-                  <Feather name="clock" size={14} color="#6B7280" />
-                </View>
-                <Text className="flex-1 text-base">{search}</Text>
-                <TouchableOpacity>
-                  <Feather name="x" size={16} color="#9CA3AF" />
-                </TouchableOpacity>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </Animated.ScrollView>
+      </View>
     </View>
   );
 };

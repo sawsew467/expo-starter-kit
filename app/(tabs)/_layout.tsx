@@ -1,11 +1,16 @@
 import { Feather } from "@expo/vector-icons";
 import { Redirect, Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "~/contexts/auth-context";
+import { useUser, useAuthLoading } from "~/features/auth/stores/auth.store";
 
 const TabsLayout = () => {
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const user = useUser();
+  const loading = useAuthLoading();
+
+  if (loading) {
+    return null; // Or a loading spinner
+  }
 
   if (!user) {
     return <Redirect href="/(auth)/sign-in" />;

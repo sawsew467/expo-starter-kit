@@ -18,8 +18,10 @@ import { FormFieldWrapper, FormGroup } from "~/components/ui/form-control";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Text } from "~/components/ui/text";
-import { useNoteQuery, useUpdateNoteMutation, useDeleteNoteMutation } from "~/hooks";
-import type { Note } from "~/types/database";
+import { useNoteQuery } from "~/features/notes/hooks/useNotesQuery";
+import { useUpdateNoteMutation, useDeleteNoteMutation } from "~/features/notes/hooks/useNotesMutation";
+import { CategorySelector } from "~/features/notes/components/CategorySelector";
+import type { Note } from "~/features/notes/types";
 
 const editNoteSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title too long"),
@@ -35,6 +37,8 @@ export default function EditNoteScreen() {
   const { data: note, isLoading: loading } = useNoteQuery(id!);
   const updateNoteMutation = useUpdateNoteMutation();
   const deleteNoteMutation = useDeleteNoteMutation();
+  const [selectedCategory, setSelectedCategory] = useState('general');
+  
 
   const {
     control,
@@ -56,8 +60,10 @@ export default function EditNoteScreen() {
         title: note.title,
         content: note.content,
       });
+      setSelectedCategory(note.category || 'general');
     }
   }, [note, reset]);
+
 
   const handleDelete = () => {
     if (!note) return;
@@ -94,7 +100,7 @@ export default function EditNoteScreen() {
   const onSubmit = async (data: EditNoteFormData) => {
     if (!id) return;
 
-    updateNoteMutation.mutate({ id, data }, {
+    updateNoteMutation.mutate({ id, data: { ...data, category: selectedCategory } }, {
       onSuccess: (result) => {
         if (result.error) {
           setError("root", { message: result.error });
@@ -216,6 +222,12 @@ export default function EditNoteScreen() {
                   />
                 </FormFieldWrapper>
               )}
+            />
+
+            <CategorySelector
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              className="mb-4"
             />
 
             {errors?.root && (

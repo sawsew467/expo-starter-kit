@@ -1,5 +1,10 @@
 import { Animated } from "react-native";
-import { HeaderAnimationConfig } from "~/types";
+
+// Animation configuration interface
+interface HeaderAnimationConfig {
+  scrollThreshold: number;
+  titleHeight: number;
+}
 
 // Default configuration for header animations
 export const DEFAULT_HEADER_CONFIG: HeaderAnimationConfig = {

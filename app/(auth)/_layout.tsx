@@ -1,8 +1,9 @@
 import { Redirect, Stack } from "expo-router";
-import { useAuth } from "~/contexts/auth-context";
+import { useAuthLoading, useUser } from "~/features/auth/stores/auth.store";
 
 export default function AuthRoutesLayout() {
-  const { user, loading } = useAuth();
+  const user = useUser();
+  const loading = useAuthLoading();
 
   // Show loading screen while checking auth state
   // if (loading) {
