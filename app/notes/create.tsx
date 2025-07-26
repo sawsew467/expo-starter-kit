@@ -18,7 +18,7 @@ import { FormFieldWrapper, FormGroup } from "~/components/ui/form-control";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Text } from "~/components/ui/text";
-import { NotesService } from "~/lib/supabase-crud";
+import { useCreateNoteMutation } from "~/hooks";
 
 const createNoteSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title too long"),
@@ -43,16 +43,23 @@ export default function CreateNoteScreen() {
     },
   });
 
-  const onSubmit = async (data: CreateNoteFormData) => {
-    const { error } = await NotesService.createNote(data);
+  const createNoteMutation = useCreateNoteMutation();
 
-    if (error) {
-      setError("root", { message: error });
-    } else {
-      Alert.alert("Success", "Note created successfully!", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
-    }
+  const onSubmit = async (data: CreateNoteFormData) => {
+    createNoteMutation.mutate(data, {
+      onSuccess: (result) => {
+        if (result.error) {
+          setError("root", { message: result.error });
+        } else {
+          Alert.alert("Success", "Note created successfully!", [
+            { text: "OK", onPress: () => router.back() },
+          ]);
+        }
+      },
+      onError: (error) => {
+        setError("root", { message: error.message });
+      },
+    });
   };
 
   return (
@@ -138,11 +145,11 @@ export default function CreateNoteScreen() {
 
             <Button
               onPress={handleSubmit(onSubmit)}
-              disabled={isSubmitting}
+              disabled={isSubmitting || createNoteMutation.isPending}
               className="mt-4"
             >
               <Text>
-                {isSubmitting ? "Creating..." : "Create Note"}
+                {isSubmitting || createNoteMutation.isPending ? "Creating..." : "Create Note"}
               </Text>
             </Button>
           </FormGroup>

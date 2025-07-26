@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from '~/lib/supabase';
 import type {
   Note,
   CreateNoteData,
@@ -6,7 +6,6 @@ import type {
   DatabaseResponse,
   DatabaseListResponse,
   NoteFilters,
-  PaginationMeta,
 } from '~/types/database';
 
 export class NotesService {

@@ -18,7 +18,7 @@ import { FormFieldWrapper, FormGroup } from "~/components/ui/form-control";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Text } from "~/components/ui/text";
-import { NotesService } from "~/lib/supabase-crud";
+import { useNoteQuery, useUpdateNoteMutation, useDeleteNoteMutation } from "~/hooks";
 import type { Note } from "~/types/database";
 
 const editNoteSchema = z.object({
@@ -31,8 +31,10 @@ type EditNoteFormData = z.infer<typeof editNoteSchema>;
 export default function EditNoteScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [loading, setLoading] = useState(true);
-  const [note, setNote] = useState<Note | null>(null);
+  
+  const { data: note, isLoading: loading } = useNoteQuery(id!);
+  const updateNoteMutation = useUpdateNoteMutation();
+  const deleteNoteMutation = useDeleteNoteMutation();
 
   const {
     control,
@@ -49,30 +51,13 @@ export default function EditNoteScreen() {
   });
 
   useEffect(() => {
-    if (id) {
-      loadNote();
-    }
-  }, [id]);
-
-  const loadNote = async () => {
-    if (!id) return;
-
-    setLoading(true);
-    const { data, error } = await NotesService.getNoteById(id);
-
-    if (error) {
-      Alert.alert("Error", error, [
-        { text: "OK", onPress: () => router.back() },
-      ]);
-    } else if (data) {
-      setNote(data);
+    if (note) {
       reset({
-        title: data.title,
-        content: data.content,
+        title: note.title,
+        content: note.content,
       });
     }
-    setLoading(false);
-  };
+  }, [note, reset]);
 
   const handleDelete = () => {
     if (!note) return;
@@ -85,15 +70,21 @@ export default function EditNoteScreen() {
         {
           text: "Delete",
           style: "destructive",
-          onPress: async () => {
-            const { error } = await NotesService.deleteNote(note.id);
-            if (error) {
-              Alert.alert("Error", error);
-            } else {
-              Alert.alert("Success", "Note deleted successfully!", [
-                { text: "OK", onPress: () => router.back() },
-              ]);
-            }
+          onPress: () => {
+            deleteNoteMutation.mutate(note.id, {
+              onSuccess: (result) => {
+                if (result.error) {
+                  Alert.alert("Error", result.error);
+                } else {
+                  Alert.alert("Success", "Note deleted successfully!", [
+                    { text: "OK", onPress: () => router.back() },
+                  ]);
+                }
+              },
+              onError: (error) => {
+                Alert.alert("Error", error.message);
+              },
+            });
           },
         },
       ]
@@ -103,15 +94,20 @@ export default function EditNoteScreen() {
   const onSubmit = async (data: EditNoteFormData) => {
     if (!id) return;
 
-    const { error } = await NotesService.updateNote(id, data);
-
-    if (error) {
-      setError("root", { message: error });
-    } else {
-      Alert.alert("Success", "Note updated successfully!", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
-    }
+    updateNoteMutation.mutate({ id, data }, {
+      onSuccess: (result) => {
+        if (result.error) {
+          setError("root", { message: result.error });
+        } else {
+          Alert.alert("Success", "Note updated successfully!", [
+            { text: "OK", onPress: () => router.back() },
+          ]);
+        }
+      },
+      onError: (error) => {
+        setError("root", { message: error.message });
+      },
+    });
   };
 
   if (loading) {
@@ -230,11 +226,11 @@ export default function EditNoteScreen() {
 
             <Button
               onPress={handleSubmit(onSubmit)}
-              disabled={isSubmitting}
+              disabled={isSubmitting || updateNoteMutation.isPending}
               className="mt-4"
             >
               <Text>
-                {isSubmitting ? "Updating..." : "Update Note"}
+                {isSubmitting || updateNoteMutation.isPending ? "Updating..." : "Update Note"}
               </Text>
             </Button>
           </FormGroup>
